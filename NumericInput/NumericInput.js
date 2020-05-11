@@ -18,21 +18,17 @@ export default class NumericInput extends Component {
         }
         this.ref = null
     }
+    componentWillReceiveProps(props) {
+        const initSent = !(props.initValue !== 0 && !props.initValue)
+        if (props.initValue !== this.state.value && initSent) {
 
-    // this.props refers to the new props
-    componentDidUpdate() {
-        const initSent = !(this.props.initValue !== 0 && !this.props.initValue); 
-
-        // compare the new value (props.initValue) with the existing/old one (this.state.value)
-        if (this.props.initValue !== this.state.value && initSent) {
             this.setState({
-                value: this.props.initValue,
-                lastValid: this.props.initValue,
-                stringValue: this.props.initValue.toString()
+                value: props.initValue,
+                lastValid: props.initValue,
+                stringValue: props.initValue.toString()
             });
         }
     }
-    
     updateBaseResolution = (width, height) => {
         calcSize = create({ width, height })
     }
@@ -41,15 +37,14 @@ export default class NumericInput extends Component {
         if (this.props.maxValue === null || (value + this.props.step < this.props.maxValue)) {
             value = (value + this.props.step).toFixed(12)
             value = this.props.valueType === 'real' ? parseFloat(value) : parseInt(value)
-            this.setState({ value, stringValue: value.toString() })
         } else if (this.props.maxValue !== null) {
             this.props.onLimitReached(true, 'Reached Maximum Value!')
             value = this.props.maxValue
-            this.setState({ value, stringValue: value.toString() })
-
         }
-        if (value !== this.props.value)
+        if (value !== this.props.value || value === 0)
             this.props.onChange && this.props.onChange(Number(value))
+        this.setState({ value, stringValue: value.toString() })
+
     }
     dec = () => {
         let value = this.props.value && (typeof this.props.value === 'number') ? this.props.value : this.state.value
@@ -60,7 +55,7 @@ export default class NumericInput extends Component {
             this.props.onLimitReached(false, 'Reached Minimum Value!')
             value = this.props.minValue
         }
-        if (value !== this.props.value)
+        if (value !== this.props.value || value === 0)
             this.props.onChange && this.props.onChange(Number(value))
         this.setState({ value, stringValue: value.toString() })
     }
@@ -231,13 +226,15 @@ export default class NumericInput extends Component {
         else return (
             <View style={inputContainerStyle}>
                 <Button onPress={this.dec} style={leftButtonStyle}>
-                    <Icon name='md-remove' size={fontSize} style={[...iconStyle, maxReached ? this.props.reachMaxDecIconStyle : {}, minReached ? this.props.reachMinDecIconStyle : {}]} />
+                    <Icon name='ios-arrow-forward' size={fontSize}
+                     style={[...iconStyle, maxReached ? this.props.reachMaxDecIconStyle :
+                      {}, minReached ? this.props.reachMinDecIconStyle : {}]} />
                 </Button>
                 <View style={[inputWraperStyle]}>
                     <TextInput {...this.props.extraTextInputProps} editable={editable} returnKeyType='done' underlineColorAndroid='rgba(0,0,0,0)' keyboardType='numeric' value={this.state.stringValue} onChangeText={this.onChange} style={inputStyle} ref={ref => this.ref = ref} onBlur={this.onBlur} onFocus={this.onFocus} />
                 </View>
                 <Button onPress={this.inc} style={rightButtonStyle}>
-                    <Icon name='md-add' size={fontSize} style={[...iconStyle, maxReached ? this.props.reachMaxIncIconStyle : {}, minReached ? this.props.reachMinIncIconStyle : {}]} />
+                    <Icon name='ios-arrow-back' size={fontSize} style={[...iconStyle, maxReached ? this.props.reachMaxIncIconStyle : {}, minReached ? this.props.reachMinIncIconStyle : {}]} />
                 </Button>
             </View>)
 
